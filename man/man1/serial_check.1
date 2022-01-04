@@ -1,0 +1,71 @@
+.\" Written by Kurt Lust, kurt.lust@uantwerpen.be for the LUMI consortium.
+.TH man 1 "4 January 2022" "0.1" "serial_check (CPEtools) command"
+
+.SH NAME
+serial_check \- Simple "Hello, World!"-style serial program
+
+.SH DESCRIPTION
+\fBserial_check\fR is a simple "Hello, World!"-style serial program
+that can print the core and host on which it is running, and optionally
+also the NUMA affinity mask.
+
+One can also label each call to \fBserial_check\fR
+which is great for
+distinguishing between the output of different instances of the program
+in case you want to experiment with starting multiple executables in a
+single job.
+
+.SH OPTIONS
+.TP
+\fB\-h\fR
+Print help information about the command
+.TP
+\fB\-l\fR \fI\,LABEL\/\fR
+Label the output of this process with \fI\,LABEL\/\fR. This automatically
+enables displaying labels.
+.TP
+\fB\-w\fR \fI\,TIME\/\fR
+keeps the CPU busy for approximately \fI\,TIME\/\fR seconds
+computing the surface of the Mandelbrot fractal with a naive
+Monte Carlo algorithm so that a user can logon to the node
+and see what is happening. At the end it will print the
+virtual CPU of the process again.
+.TP
+\fB\-n\fR
+Show the NUMA affinity mask: Once ASCII character per virtual core,
+where a number or capital letter denotes that the core can be used
+and the number or letter denotes the NUMA group (or a * if the
+number of the NUMA group would be 36 or larger) and a dot denotes
+that the core is not used.
+.TP
+\fB\-r\fR
+Numeric representation of the affinity mask as a series of core
+or ranges of cores.
+
+.SH EXAMPLE
+
+The following is a job script to start a heterogeneous job in Slurm that
+shows many features of this program:
+
+.EX
+#! /bin/bash
+#SBATCH --time=2:00
+#SBATCH --ntasks=1 --cpus-per-task=8
+
+serial_check -l test -w 15 -n -r
+.EE
+
+This script simulates a \fBserial_check\fR process labeled exe1.
+It will also simulate some load during
+approximately 15 seconds, and before and after that print the core and node on
+which the process is running and the affinity mask in the two supported formats.
+You may have to add the appropriate \fBmodule load\fR commands to the script
+to ensure that \fBhybrid_check\fR works, and the script also assumes that it
+is in the search path for executables. You also have to add the partition and
+account to use.
+
+.SH SEE ALSO
+omp_check(1), mpi_check(1), hybrid_check(1), CPEtools(1)
+
+.SH AUTHOR
+Kurt Lust (Kurt.Lust@uantwerpen.be) for the LUMI consortium

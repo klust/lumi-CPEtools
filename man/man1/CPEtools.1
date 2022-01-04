@@ -1,0 +1,37 @@
+.\" Written by Kurt Lust, kurt.lust@uantwerpen.be for the LUMI consortium.
+.TH man 1 "4 January 2022" "0.1" " overview"
+
+.SH NAME
+CPEtools \- Various CPE-dependend tools, e.g., to test process and thread
+affinity.
+
+.SH DESCRIPTION
+CPEtools contains various small tools that depend on a particular Cray Programming
+Environment and that can be used, e.g., to test starting various types of programs.
+
+Commands:
+.TP
+\fBserial_check\fR
+Serial program can print core and host allocation and affinity information.
+
+.TP
+\fBomp_check\fR
+OpenMP program can print core and host allocation and affinity information.
+
+.TP
+\fBmpi_check\fR
+MPI program can print core and host allocation and affinity information.
+It is also suitable to test heterogeneous jobs.
+
+.TP
+\fBhybrid_hello\fR
+Hybrid MPI/OpenMP program can print core and host allocation and affinity information.
+It is also suitable to test heterogeneous jobs.
+It encompasses the full functionality of \fBserial_check\fR, \fBomp_check\fR and
+\fBmpi_check\fR.
+
+.SH SEE ALSO
+serial_check(1), omp_check(1), mpi_check(1), hybrid_check(1)
+
+.SH AUTHOR
+Kurt Lust (Kurt.Lust@uantwerpen.be) for the LUMI consortium

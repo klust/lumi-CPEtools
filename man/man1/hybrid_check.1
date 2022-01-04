@@ -1,0 +1,106 @@
+.\" Written by Kurt Lust, kurt.lust@uantwerpen.be for the LUMI consortium.
+.TH man 1 "4 January 2022" "0.1" "hybrid_check (CPEtools) command"
+
+.SH NAME
+hybrid_check \- Simple "Hello, World!"-style hybrid MPI/OpenMP program
+
+.SH DESCRIPTION
+\fBhybrid_check\fR is a simple "Hello, World!"-style hybrid MPI/OpenMP program
+that can print some information about where it is running.
+
+Each thread prints a line with its MPI rank, OpenMP thread number, the core
+number and the node name the thread is running on.
+The output is sorted according to the MPI rank and OpenMP thread number
+within each MPI rank. One can also label each call to \fBhybrid_check\fR
+which is great for
+distinguishing between the output of different components of a
+heterogeneous job, and information on the pinning of each thread.
+
+The number of threads per rank can be set through the OMP_NUM_THREADS
+environment variable, and the MPI processes should be started using
+\fBsrun\fR with the appropriate options for your environment.
+When started without \fBsrun\fR,
+it will just run a single instance of the program, in which case
+it would actually show what a regular OpenMP program would do.
+
+.SH OPTIONS
+.TP
+\fB\-h\fR
+Print help information about the command
+.TP
+\fB\-l\fR \fI\,LABEL\/\fR
+Label the output of this process with \fI\,LABEL\/\fR. This automatically
+enables displaying labels.
+.TP
+\fB\-w\fR \fI\,TIME\/\fR
+keeps all allocated CPUs busy for approximately \fI\,TIME\/\fR seconds
+computing the surface of the Mandelbrot fractal with a naive
+Monte Carlo algorithm so that a user can logon to the nodes
+and see what is happening. At the end it will print the
+allocation of the threads again as the OS may have improved
+the spreading of the threads over the cores.
+If different values are given for different parts in a
+heterogeneous job, the largest will be used and applied to all
+components of the heterogeneous job.
+.TP
+\fB\-n\fR
+Show the NUMA affinity mask: Once ASCII character per virtual core,
+where a number or capital letter denotes that the core can be used
+and the number or letter denotes the NUMA group (or a * if the
+number of the NUMA group would be 36 or larger) and a dot denotes
+that the core is not used.
+.TP
+\fB\-r\fR
+Numeric representation of the affinity mask as a series of core
+or ranges of cores.
+
+.PP
+In a heterogeneous job, the \fB\-w\fR, \fB\-n\fR and \fB\-r\fR options need to be specified for
+only one of the components of the job but will apply to all components.
+
+.SH EXAMPLE
+
+The following is a job script to start a heterogeneous job in Slurm that
+shows many features of this program:
+
+.EX
+#! /bin/bash
+#SBATCH --time=2:00
+#SBATCH --ntasks=4 --cpus-per-task=4
+#SBATCH hetjob
+#SBATCH --ntasks=2 --cpus-per-task=8
+
+srun --ntasks=4 --cpus-per-task=4 hybrid_check -l exe1 -w 15 -n -r : \\
+     --ntasks=2 --cpus-per-task=8 hybrid_check -l exe2
+.EE
+
+This script simulates a heterogeneous job running in a single MPI_COM_WORLD
+universum with an instance of \fBhybrid_check\fR labeled exe1 running in
+4 MPI ranks with 4 threads each and a second instance labeled exe2 running
+in 2 MPI ranks with 8 threads each. It will also simulate some load during
+approximately 15 seconds, and before and after that print the distribution
+of threads including the affinity in the two supported formats.
+You may have to add the appropriate \fBmodule load\fR commands to the script
+to ensure that \fBhybrid_check\fR works, and the script also assumes that it
+is in the search path for executables. You also have to add the partition and
+account to use.
+
+However the program can even be run as a regular
+single multithreaded executable without using \fBsrun\fR. E.g., the following
+job script would run \fBhybrid_check\fR in shared memory mode on 8 cores:
+
+.EX
+#! /bin/bash
+#SBATCH --time=0:20
+#SBATCH --ntasks=1 --cpus-per-task=8
+
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export OMP_PROC_BIND=true
+hybrid_check -l test -w 15 -n -r
+.EE
+
+.SH SEE ALSO
+hybrid_check(1), omp_check(1), mpi_check(1), CPEtools(1)
+
+.SH AUTHOR
+Kurt Lust (Kurt.Lust@uantwerpen.be) for the LUMI consortium

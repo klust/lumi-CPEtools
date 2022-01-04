@@ -1,0 +1,86 @@
+.\" Written by Kurt Lust, kurt.lust@uantwerpen.be for the LUMI consortium.
+.TH man 1 "4 January 2022" "0.1" "mpi_check (CPEtools) command"
+
+.SH NAME
+mpi_check \- Simple "Hello, World!"-style MPI program
+
+.SH DESCRIPTION
+\fBmpi_check\fR is a simple "Hello, World!"-style MPI program
+that can print some information about where it is running.
+
+Each rank prints a line with its MPI rank, the core
+number and the node name it is running on.
+The output is sorted according to the MPI rank. One can also label each call to \fBmpi_check\fR
+which is great for
+distinguishing between the output of different components of a
+heterogeneous job, and information on the pinning of each process.
+
+The MPI processes should be started using
+\fBsrun\fR with the appropriate options for your environment.
+When started without \fBsrun\fR,
+it will just run a single instance of the program, in which case
+it would actually show what a serial program would do.
+
+.SH OPTIONS
+.TP
+\fB\-h\fR
+Print help information about the command
+.TP
+\fB\-l\fR \fI\,LABEL\/\fR
+Label the output of this process with \fI\,LABEL\/\fR. This automatically
+enables displaying labels.
+.TP
+\fB\-w\fR \fI\,TIME\/\fR
+keeps all allocated CPUs busy for approximately \fI\,TIME\/\fR seconds
+computing the surface of the Mandelbrot fractal with a naive
+Monte Carlo algorithm so that a user can logon to the nodes
+and see what is happening. At the end it will print the
+allocation of the threads again as the OS may have improved
+the spreading of the threads over the cores.
+If different values are given for different parts in a
+heterogeneous job, the largest will be used and applied to all
+components of the heterogeneous job.
+.TP
+\fB\-n\fR
+Show the NUMA affinity mask: Once ASCII character per virtual core,
+where a number or capital letter denotes that the core can be used
+and the number or letter denotes the NUMA group (or a * if the
+number of the NUMA group would be 36 or larger) and a dot denotes
+that the core is not used.
+.TP
+\fB\-r\fR
+Numeric representation of the affinity mask as a series of core
+or ranges of cores.
+
+.PP
+In a heterogeneous job, the \fB\-w\fR, \fB\-n\fR and \fB\-r\fR options need to be specified for
+only one of the components of the job but will apply to all components.
+
+.SH EXAMPLE
+
+The following is a job script to start a heterogeneous job in Slurm that
+shows many features of this program:
+
+.EX
+#! /bin/bash
+#SBATCH --time=2:00
+#SBATCH --ntasks=256 --cpus-per-task=1
+
+srun mpi_check -l test -w 5 -n -r
+.EE
+
+This script simulates an MPI job running \fBmpi_check\fR labeled exe1 on
+256 cores (2 nodes on LUMI).
+It will also simulate some load during
+approximately 15 seconds, and before and after that print the distribution
+of threads including the affinity in the two supported formats.
+You may have to add the appropriate \fBmodule load\fR commands to the script
+to ensure that \fBmpi_check\fR works, and the script also assumes that it
+is in the search path for executables. You also have to add the partition and
+account to use.
+
+.SH SEE ALSO
+serial_check(1), omp_check(1), hybrid_check(1), CPEtools(1)
+
+.SH AUTHOR
+Kurt Lust (Kurt.Lust@uantwerpen.be) for the LUMI consortium
