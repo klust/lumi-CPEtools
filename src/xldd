@@ -1,0 +1,277 @@
+#!/usr/bin/env python3
+"""
+xldd is a program to parse output from the ldd command for an executable.
+Use case 1: parse ldd output and write a report, e.g. which version of Cray libraries are used.
+Use case 2: output ldd format, but resolve dynamically linked libraries which are symlinks, --ldd mode.
+Use case 3: calculate a hash fingerprint for all included library paths to compare binaries or changes in the runtime environment over time --hash mode.
+"""
+
+import subprocess
+import os
+import sys
+import argparse
+import hashlib
+import re
+
+def flatten(t):
+    return [item for sublist in t for item in sublist]
+
+def column0(t):
+    return [sublist[0] for sublist in t]
+
+def column1(t):
+    return [sublist[1] for sublist in t]
+
+def parse_ldd_output(data):
+  # Parses ldd out input into an array formatted [[lib name,lib path],...]
+
+  # Split into lines
+  lines = data.split("\n")
+
+  # Discard empty last line
+  if lines[-1] == "":
+    lines = lines[0:-1]
+
+  # Filter out linux-vdso.1 and /lib64/ld-linux-x86-64.so.2, which are special dependencies
+  lines = filter(lambda x: "linux-vdso" not in x, lines)
+  lines = filter(lambda x: "linux-x86-64.so" not in x, lines)
+
+  # Trim tab characters
+  lines = map(lambda x: x.strip(), lines)
+
+  # Strip location info, anything after (
+  lines = map(lambda x: x.split("(")[0],lines)
+
+  # Split fields by the separator =>
+  lines = map(lambda x: x.split("=>"),lines)
+
+  # Remove trailling spaces
+  lines = [list(map(lambda x: x.strip(),line)) for line in lines]
+  return list(lines)
+
+# Filter out libraries that match any item in a list of keywords
+def match_libraries(libs,keywords):
+  return [x for x in libs if any(y in x for y in keywords)]
+
+def check_language_runtimes(libs,paths):
+  # Look for language runtimes
+  rtlibs = match_libraries(libs,["libc.","libstdc++","libc++","libgfortran"])
+
+  if len(rtlibs) > 0:
+      print("Language runtimes: Yes")
+      for l in rtlibs:
+        if "libc" in l:
+          print("  C runtime")
+        elif "libstdc++" in l:
+          print("  C++ runtime (GCC)")
+        elif "libc++" in l:
+          print("  C++ runtime (Clang)")
+        elif "libgfortran" in l:
+          print("  Fortran runtime (GCC)")
+        else:
+          print("  %s" % l)
+  else:
+    print("Language runtimes: None!")
+
+def check_mpi_libraries(libs,paths):
+  # Look for MPI libraries
+  mpilibs = match_libraries(libs,["libmpi"])
+
+  if len(mpilibs) > 0:
+      print("MPI: Yes")
+      for l in mpilibs:
+        # Test for Cray MPICH library
+        if "/opt/cray/pe" in paths[l]:
+          # Attempt to determine the Cray MPICH version by looking at the path
+          # E.g. /opt/cray/pe/mpich/8.1.8/ofi/gnu/9.1/lib/libmpi_gnu_91.so.12.0.0
+          m = re.match(r"/opt/cray/pe/mpich/(?P<version>\d+\.\d+\.\d+)/(?P<fabric>\w+)/(?P<compiler>\w+)/.*",paths[l])
+          if (m):
+            m.groupdict()
+            print("  Cray MPICH %s for %s fabric and %s compiler (%s)" % (m["version"],m["fabric"],m["compiler"],l))
+          else:
+            print("  Cray MPICH unknown version (%s)" % l)
+        else:
+          print("  %s" % l)
+  else:
+    print("MPI: No")
+
+def check_libfabric(libs,paths):
+  # Look for libfabric
+  fablibs = match_libraries(libs,["libfabric"])
+
+  if len(fablibs) > 0:
+      print("Libfabric: Yes")
+      for l in fablibs:
+        # Test for Cray libfabric
+        if "/opt/cray/" in paths[l]:
+
+          # Attempt to determine the Cray libfabric version by looking at the path
+          # E.g. /opt/cray/libfabric/1.11.0.4.79/lib64/libfabric.so.1.14.0
+          m = re.match(r"/opt/cray/libfabric/(?P<version>[\w\.]+)/.*",paths[l])
+          if (m):
+            m.groupdict()
+            print("  Cray libfabric %s (%s) " % (m["version"],l))
+          else:
+            print("  Cray libfabric unknown version (%s)" % l)
+        else:
+          print("  %s" % l)
+  else:
+    print("Libfabric: No")
+  
+def check_openmp(libs,paths):
+  # Look for OpenMP libraries
+  omplibs = match_libraries(libs,["libgomp","libomp","libcraymp"])
+  if len(omplibs) > 0:
+      print("OpenMP: Yes")
+      for l in omplibs:
+        if "libgomp" in l:
+          print("  GCC library (%s)" % l)
+        elif "libomp" in l:
+          print("  Clang library (%s)" % l)
+        elif "libcraymp" in l:
+          print("  Cray library (%s)" % l)
+        else:
+          print("  %s" % l)
+  else:
+    print("OpenMP: No")
+
+def check_blas(libs,paths):
+  # Look for BLAS/LAPACK libraries
+  lalibs = match_libraries(libs,["libblas","liblapack","libopenblas","libblis","libflame","libmkl_","libsci"])
+ 
+  if args.debug:
+      print("DEBUG Linear algebra libs:")
+      print(lalibs)
+
+  if len(lalibs) > 0:
+      print("BLAS/LAPACK: Yes")
+      for l in lalibs:
+        if "libblas" in l:
+          print("  Generic BLAS (%s)" % l )
+        elif "liblapack" in l:
+          print("  Generic LAPACK (%s)" % l)
+        elif "libopenblas" in l:
+          print("  OpenBLAS (%s)" % l)
+        elif "libblis" in l:
+          print("  BLIS (%s) % l")
+        elif "libflame" in l:
+          print("  FLAME (%s)" % l)
+        elif "libmkl_" in l:
+          print("  Intel MKL (%s)" % l)
+        elif "libsci" in l:
+          # Attempt to determine CrayLibsci version by looking at the path
+          # E.g. /opt/cray/pe/libsci/21.08.1.2/GNU/9.1/x86_64/lib/libsci_gnu_82.so.5.0
+          m = re.match(r"/opt/cray/pe/libsci/(?P<version>[\w\.]+)/(?P<compiler>\w+)/.*",paths[l])
+          if (m):
+            m.groupdict()
+            print("  Cray LibSci %s for %s compiler (%s)" % (m["version"],m["compiler"],l))
+          else:
+            print("  Cray LibSci unknown version (%s)" % l)
+        else:
+          print("  %s" % l)
+  else:
+    print("BLAS/LAPACK: No")
+
+def check_fftw(libs,paths):
+  # Look for FFTW libraries
+  fftlibs = match_libraries(libs,["libfftw"])
+
+  if args.debug:
+      print("DEBUG FFTW libs:")
+      print(fftlibs)
+
+  if len(fftlibs) > 0:
+      print("FFTW: Yes")
+      for l in fftlibs:
+        # Test for Cray FFTW library
+        if "/opt/cray/pe" in paths[l]:
+          # Attempt to determine Cray FFTW version by looking at the path
+          # E.g. /opt/cray/pe/fftw/3.3.8.11/x86_rome/lib/libfftw3.so.mpi31.3.5.8
+          m = re.match(r"/opt/cray/pe/fftw/(?P<version>[\w\.]+)/.*",paths[l])
+          if (m):
+            m.groupdict()
+            print("  Cray FFTW %s (%s)" % (m["version"],l))
+          else:
+            print("  Cray FFTW unknown version (%s)" % l)
+        else:
+          print("  %s" % l)
+
+  else:
+    print("FFTW: No")
+
+# ==================
+# Main program
+# ==================
+
+parser = argparse.ArgumentParser("xldd",description=__doc__)
+parser.add_argument('binaries',metavar='executable',nargs="+",help="a list of executables")
+parser.add_argument('--debug',dest="debug",action="store_true",help="Display extra output for debugging")
+parser.add_argument('--ldd',dest="dump",action="store_true",help="Only display a list of libraries like ldd does")
+parser.add_argument('--dont-follow-symlinks',dest="nosymlinks",action="store_true",help="Do not try to resolve symlinks")
+parser.add_argument('--hash',dest="hash",action="store_true",help="Calculate a hash sum of sorted library paths")
+args = parser.parse_args()
+
+if args.debug:
+  print(args)
+
+for exe in args.binaries:
+  if os.path.exists(os.path.realpath(exe)):
+    try:
+      output = subprocess.check_output(["ldd", exe], universal_newlines=True)
+      ldd = parse_ldd_output(output)
+    except:
+      print("There was a problem running the ldd command on %s and extracting the information. Is it a binary?" % exe)
+      exit(1)
+  else:
+    print("File not found: %s" % exe)
+    continue
+  
+  if args.debug:
+    print(ldd)
+
+  if "not found" in flatten(ldd):
+    print("WARNING! Missing libraries. The linker cannot find them in the current environment")
+    print("The output might be incorrect or incomplete!")
+
+  # Make some handy datastructures
+  libs = column0(ldd)
+  libpaths = column1(ldd)
+
+  # Resolve symlinks
+  if args.debug:
+    print("DEBUG: Paths before resolving symlinks")
+    print(libpaths)
+  if not args.nosymlinks:
+    libpaths = list(map(lambda x: os.path.realpath(x),libpaths))
+  if args.debug:
+      print("DEBUG: Paths after resolving symlinks")
+      print(libpaths)
+  
+  # Make a hash that maps from a library name to the location on disk
+  pathlookup = dict()
+  for i,k in enumerate(libs):
+    pathlookup[k] = libpaths[i]
+
+  if args.dump:
+    # Just print a list of resolved libraries for manual inspection
+    for l in libs:
+      print("       ",l," => ",pathlookup[l])
+  elif args.hash:
+    # Make a LDD fingerprint of all library paths in sorted order
+    libstr = "".join(sorted(libpaths))
+    print(hashlib.sha256(libstr.encode('utf-8')).hexdigest())
+  else:
+    # Scan libraries and report
+    print("-"*62)
+    print("  Dynamically linked library information for the executable:")
+    print("    " + exe)
+    print("-"*62)
+    print("Number of linked libraries: %i" % len(ldd))
+
+    check_language_runtimes(libs,pathlookup)
+    check_mpi_libraries(libs,pathlookup)
+    check_libfabric(libs,pathlookup)
+    check_openmp(libs,pathlookup)  
+    check_blas(libs,pathlookup)
+    check_fftw(libs,pathlookup)
+
