@@ -22,7 +22,7 @@ docurls = [
     "Man pages, start with man LUMI-CPEtools",
 ]
 
-toolchain = {'name': 'cpeGNU', 'version': '21.08'}
+toolchain = {'name': 'cpeGNU', 'version': '21.12'}
 # Note: The Makefile is designed to work with the compiler variables as defined
 # when usempi and openmp are both false, as the module contains code with and
 # without MPI or OpenMP support, though it would probably still work if these

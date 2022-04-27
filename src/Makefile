@@ -25,6 +25,7 @@ LIBS    ?=
 
 examples : bindir \
 	       ../bin/serial_check ../bin/omp_check ../bin/mpi_check ../bin/hybrid_check \
+	       ../bin/xldd
 
 clean : 
 	-/bin/rm ../bin/*
@@ -52,3 +53,6 @@ mpi_check : ../bin/mpi_check
 hybrid_check : ../bin/hybrid_check
 ../bin/hybrid_check : hybrid_check.c Makefile
 	$(MPICC) $(CFLAGS) $(OMPFLAG) $(DEFINES) -DWITH_MPI -DWITH_OMP $(LIBS) $< -o $@
+	
+../bin/xldd : xldd
+	cp $< $@
