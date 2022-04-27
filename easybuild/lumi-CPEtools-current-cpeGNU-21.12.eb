@@ -1,6 +1,6 @@
 easyblock = 'MakeCp'
 
-name =    'LUMI-CPEtools'
+name =    'lumi-CPEtools'
 version = 'current'
 
 homepage = 'https://www.lumi-supercomputer.eu'
@@ -19,7 +19,7 @@ $EBROOTLUMIMINCPETOOLS/src.
 """
 
 docurls = [
-    "Man pages, start with man LUMI-CPEtools",
+    "Man pages, start with man lumi-CPEtools",
 ]
 
 toolchain = {'name': 'cpeGNU', 'version': '21.12'}
