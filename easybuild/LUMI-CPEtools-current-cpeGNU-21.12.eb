@@ -51,7 +51,6 @@ sources = [{
 
 prebuildopts = 'cd src ; '
 buildopts = 'CC=cc MPICC=cc CFLAGS="-O2" OMPFLAG="-fopenmp" DEFINES="" LIBS=""'
-#start_dir = 'src'
 
 files_to_copy = [
     'bin',

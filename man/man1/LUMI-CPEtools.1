@@ -1,15 +1,21 @@
 .\" Written by Kurt Lust, kurt.lust@uantwerpen.be for the LUMI consortium.
-.TH man 1 "4 January 2022" "0.1" " overview"
+.TH man 1 "27 April 2022" "1.0" " overview"
 
 .SH NAME
-LUMI-CPEtools \- Various CPE-dependend tools, e.g., to test process and thread
+LUMI-CPEtools \- Various CPE-dependent tools, e.g., to test process and thread
 affinity.
 
 .SH DESCRIPTION
-CPEtools contains various small tools that depend on a particular Cray Programming
-Environment and that can be used, e.g., to test starting various types of programs.
+CPEtools contains various small tools to check which libraries a program links
+to or to experiment how programs of various types would start on LUMI to
+refine batch scripts. Some tools are specific for a particular CPE.
 
 Commands:
+.TP
+\fBxldd\fR
+An ldd-like program to show which versions of Cray PE libraries are used by an
+executable.
+
 .TP
 \fBserial_check\fR
 Serial program can print core and host allocation and affinity information.
@@ -31,7 +37,7 @@ It encompasses the full functionality of \fBserial_check\fR, \fBomp_check\fR and
 \fBmpi_check\fR.
 
 .SH SEE ALSO
-serial_check(1), omp_check(1), mpi_check(1), hybrid_check(1)
+xldd(1), serial_check(1), omp_check(1), mpi_check(1), hybrid_check(1)
 
 .SH AUTHOR
-Kurt Lust (Kurt.Lust@uantwerpen.be) for the LUMI consortium
+Kurt Lust (Kurt.Lust@uantwerpen.be) and Peter Larsson (ypetla@kth.se) for the LUMI consortium

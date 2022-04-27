@@ -1,0 +1,59 @@
+.\" Written by Kurt Lust, kurt.lust@uantwerpen.be for the LUMI consortium.
+.TH man 1 "27 April 2022" "1.0" "xldd (LUMI-CPEtools) command"
+
+.SH NAME
+xldd \- ldd parser to check the version of Cray libraries used
+
+.SH DESCRIPTION
+\fBxldd\fR is a program to parse output from the ldd command for an executable. 
+
+.HP 3
+* Use case 1: parse ldd output and write a report, e.g. which version of Cray
+libraries are used. 
+.HP 3
+* Use case 2: output ldd format, but resolve dynamically
+linked libraries which are symlinks, \fB\-\-ldd\fR mode. 
+.HP 3
+* Use case 3: calculate a hash
+fingerprint for all included library paths to compare binaries or changes in
+the runtime environment over time, \fB\-\-hash\fR mode.
+
+.SH "SYNOPSIS"
+.PP
+.nf
+xldd
+        [-h | --help]
+        [--debug
+        [--ldd]
+        [--dont-follow-symlinks]
+        [--hash]
+        \fIexecutable(s)\fP
+.fi
+
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Show some help and exit
+.TP
+\fB\-\-debug\fR
+Display extra output for debugging
+.TP
+\fB\-\-ldd\fR
+Only display a list of libraries like ldd does
+.TP
+\fB\-\-dont\-follow\-symlinks\fR
+Do not try to resolve symlinks
+.TP
+\fB\-\-hash\fR
+Calculate a hash sum of sorted library paths
+
+.SH POSITIONAL ARGUMENTS
+.TP
+\fBexecutable(s)\fR
+a list of executables
+
+.SH SEE ALSO
+LUMI-CPEtools(1)
+
+.SH AUTHOR
+Peter Larsson (ypetla@kth.se)  for the LUMI consortium
