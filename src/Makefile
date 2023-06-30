@@ -13,19 +13,24 @@
 #    hybrid_hello)
 #
 
-CC      ?= cc
-MPICC   ?= cc
-CFLAGS  ?= -O2
-OMPFLAG ?= -fopenmp
-DEFINES ?= 
-#DEFINES ?= -DDEBUG
-LIBS    ?= 
+CC          ?= cc
+MPICC       ?= cc
+CFLAGS      ?= -O2
+CXX         ?= CC
+MPICXX      ?= CC
+CXXFLAGS    ?= -O2
+OMPFLAG     ?= -fopenmp
+DEFINES     ?= 
+#DEFINES     ?= -DDEBUG
+ROCMDEFINES ?= -D__HIP_PLATFORM_AMD__
+LIBS        ?= 
+ROCMLIBS    ?= -L${ROCM_PATH}/lib -lamdhip64
 
 .SUFFIXES:
 
 examples : bindir \
 	       ../bin/serial_check ../bin/omp_check ../bin/mpi_check ../bin/hybrid_check \
-	       ../bin/xldd
+	       ../bin/gpu_check ../bin/xldd
 
 clean : 
 	-/bin/rm ../bin/*
@@ -53,6 +58,10 @@ mpi_check : ../bin/mpi_check
 hybrid_check : ../bin/hybrid_check
 ../bin/hybrid_check : hybrid_check.c Makefile
 	$(MPICC) $(CFLAGS) $(OMPFLAG) $(DEFINES) -DWITH_MPI -DWITH_OMP $(LIBS) $< -o $@
+	
+gpu_check : ../bin/gpu_check
+../bin/gpu_check : gpu_check.cpp Makefile
+	$(MPICXX) $(CXXFLAGS) $(OMPFLAG) $(ROCMDEFINES) $(ROCMLIBS) $< -o $@
 	
 ../bin/xldd : xldd
 	cp $< $@

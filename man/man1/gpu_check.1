@@ -1,0 +1,66 @@
+.\" Written by Kurt Lust, kurt.lust@uantwerpen.be for the LUMI consortium.
+.TH man 1 "3 July 2023" "1.1" "gpu_check (lumi-CPEtools) command"
+
+.SH NAME
+gpu_check \- Simple "Hello, World!"-style hybrid MPI/OpenMP program to check 
+the GPU bindings specifically on Cray EX Bardpeak nodes as in LUMI-G.
+
+.SH DESCRIPTION
+\fBgpu_check\fR is a simple "Hello, World!"-style hybrid MPI/OpenMP program
+that can print some information about where it is running.
+
+Each thread prints a line with its MPI rank, OpenMP thread number, the core
+number, the node name the thread is running on, and the GPUs seen by the
+process. The output is sorted according to the MPI rank and OpenMP thread number
+within each MPI rank. 
+
+The number of threads per rank can be set through the OMP_NUM_THREADS
+environment variable, and the MPI processes should be started using
+\fBsrun\fR with the appropriate options for your environment.
+When started without \fBsrun\fR,
+it will just run a single instance of the program, in which case
+it would actually show what a regular OpenMP program would do.
+
+The program is a refinement of the hello_jobstep program from ORNL
+that can be found at https://code.ornl.gov/olcf/hello_jobstep.
+
+.SH OPTIONS
+.TP
+\fB\-h\fR
+Print help information about the command.
+.TP
+\fB\-l\fR 
+Shows a bit more information: CCD with the thread number
+and GCD and optimal CCD with the PCIe bus ID.
+\fB\-u\fR
+Unsorted printing, may work around some bug.
+
+.SH EXAMPLE
+
+The following is a job script to start a job in Slurm with 4 MPI
+processes each using 15 cores and 2 GPUs, with proper binding.
+It assumes the correct modules are loaded already.
+
+.EX
+#SBATCH --partition=standard-g
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --gpus-per-node=8
+#SBATCH --time=00:05:00
+#SBATCH --hint=nomultithread
+
+export OMP_PROC_BIND=close
+export OMP_PLACES=cores
+
+cpu_bind="--cpu-bind=mask_cpu:0xfffe,0xfffe0000,0xfffe00000000,0xfffe000000000000"
+gpu_bind="--gpu-bind=mask_gpu:0x30,0x0c,0xc0,0x03"
+
+srun -N ${SLURM_NNODES} -n ${SLURM_NTASKS} ${cpu_bind} ${gpu_bind} gpu_check -l
+.EE
+
+.SH SEE ALSO
+serial_check(1), omp_check(1), mpi_check(1), hybrid_check(1), lumi-CPEtools(1)
+
+.SH AUTHOR
+Kurt Lust (Kurt.Lust@uantwerpen.be) for the LUMI consortium, based on 
+the hello_jobstep program from ORNL.

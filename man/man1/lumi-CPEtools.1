@@ -1,5 +1,5 @@
 .\" Written by Kurt Lust, kurt.lust@uantwerpen.be for the LUMI consortium.
-.TH man 1 "27 April 2022" "1.0" " overview"
+.TH man 1 "3 July 2023" "1.1" " overview"
 
 .SH NAME
 lumi-CPEtools \- Various CPE-dependent tools, e.g., to test process and thread
@@ -35,6 +35,11 @@ Hybrid MPI/OpenMP program can print core and host allocation and affinity inform
 It is also suitable to test heterogeneous jobs.
 It encompasses the full functionality of \fBserial_check\fR, \fBomp_check\fR and
 \fBmpi_check\fR.
+
+.TP
+\fBgpu_check\fR
+A hybrid MPI/OpenMP program that prints information about thread and GPU binding/mapping
+on Cray EX Bardpeak nodes as in LUMI-G, based on the ORNL hello_jobstep program.
 
 .SH SEE ALSO
 xldd(1), serial_check(1), omp_check(1), mpi_check(1), hybrid_check(1)
