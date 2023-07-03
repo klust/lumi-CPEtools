@@ -15,12 +15,12 @@
 
 CC          ?= cc
 MPICC       ?= cc
-CFLAGS      ?= -O2
+CFLAGS      ?= -O2 -std=c99
 CXX         ?= CC
 MPICXX      ?= CC
-CXXFLAGS    ?= -O2
+CXXFLAGS    ?= -O2 -std=c++11
 OMPFLAG     ?= -fopenmp
-DEFINES     ?= 
+DEFINES     ?= -D_GNU_SOURCE=
 #DEFINES     ?= -DDEBUG
 ROCMDEFINES ?= -D__HIP_PLATFORM_AMD__
 LIBS        ?= 
@@ -28,9 +28,14 @@ ROCMLIBS    ?= -L${ROCM_PATH}/lib -lamdhip64
 
 .SUFFIXES:
 
-examples : bindir \
+exe: exe_cpu exe_gpu
+
+exe_cpu : bindir \
 	       ../bin/serial_check ../bin/omp_check ../bin/mpi_check ../bin/hybrid_check \
-	       ../bin/gpu_check ../bin/xldd
+	       ../bin/xldd
+	       
+exe_gpu : bindir \
+	      ../bin/gpu_check 
 
 clean : 
 	-/bin/rm ../bin/*
