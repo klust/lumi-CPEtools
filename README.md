@@ -13,6 +13,8 @@ results.
 
 ## Some included tools
 
-  * `hybrid_hello`: Derived from the `acheck` command used by HPE Cray in their
+-   `hybrid_check`: Derived from the `acheck` and `xthi` commands used by HPE Cray in their
     tutorials.
+
+-   `gpu_Check`: Derived from the ORNL `hello_jobstep` program.
 
