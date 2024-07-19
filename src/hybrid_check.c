@@ -150,17 +150,29 @@ void print_help( const char *exe_name ) {
 		"                ranges of cores.\n"
 		" --no-hostname  Do not show the hostname in the output.\n"
 		" --no-cpu       Do not show the CPU number in the output.\n"
+#if defined( WITH_MPI )
 		" --slurmvars    Slow the value of SLURM_NODEID, SLURM_LOCALID and SLURM_PROCID\n"
 		"                for each rank. This can be useful to study Cray MPICH rank\n"
 		"                reordering.\n"
+#endif
+#if defined( WITH_MPI )
 		" --fp           Format showing host, cpu and numeric mask, but no Slurm\n"
 		"                variables.\n"
+#else
+    	" --fp           Format showing host, cpu and numeric mask.\n"
+#endif
+#if defined( WITH_MPI )
 		" --fr           Format showing slurm variables and numeric mask, but no hostname\n"
 		"                or cpu number, making the output fully reproducible when running\n"
 		"                on exclusive nodes.\n"
+#else
+		" --fr           Format showing numeric mask, but no hostname or cpu number,\n"
+		"                making the output fully reproducible when running on exclusive\n"
+		"                nodes.\n"
+#endif
 		"\n"
 	);
-#ifdef WITH_MPI
+#if defined( WITH_MPI )
 	fprintf( stderr,
 		"In a heterogeneous job, the -w, -n and -r options need to be specified for\n"
         "only one of the components of the job but will apply to all components.\n"
@@ -504,8 +516,10 @@ void get_args( int argc, char **argv, int mpi_myrank,
 			*show_hostname = 0;
 		} else if ( strcmp( *argv, "--no-cpu" ) == 0 ) {
 			*show_cpu = 0;
+#if defined( WITH_MPI )
 		} else if ( strcmp( *argv, "--show-slurmvars" ) == 0 ) {
 			*show_slurmvars = 1;
+#endif
 		} else if ( strcmp( *argv, "--fp" ) == 0 ) {
 			*show_slurmvars = 0;
 			*show_hostname  = 1;
@@ -513,7 +527,11 @@ void get_args( int argc, char **argv, int mpi_myrank,
 			*show_numamask  = 0;
 			*show_rangemask = 1;
 		} else if ( strcmp( *argv, "--fr" ) == 0 ) {
+#if defined( WITH_MPI )
 			*show_slurmvars = 1;
+#else
+			*show_slurmvars = 0;
+#endif
 			*show_hostname  = 0;
 			*show_cpu       = 0;
 			*show_numamask  = 0;
@@ -673,43 +691,33 @@ int data_gather_print( const t_configInfo *configInfo, const char *option_label,
             // The min function should not be needed, but it prevents overrunning memory in case of a corrupt
             // message so also helps to avoid segmentation violations.
             for ( int c2 = 0; c2 < min( buf_rankData->openmp_numthreads, configInfo->max_openmp_numthreads ); c2++ ) {
-#if defined( WITH_OMP ) && defined( WITH_MPI)
-            	// Hybrid case
-            	printf( "++ %-*s%sMPI rank %3d/%-3d OpenMP thread %3d/%-3d on",
-            			max_label_length, buf_rankData->label, label_sep,
-						buf_rankData->mpi_myrank, configInfo->mpi_numranks,
-						c2, buf_rankData->openmp_numthreads );
-#elif defined( WITH_OMP)
-            	// OpenMP case
-            	printf( "++ %-*s%sOpenMP thread %3d/%-3d on",
-            			max_label_length, buf_rankData->label, label_sep,
-						c2, buf_rankData->openmp_numthreads );
-#elif defined( WITH_MPI)
-            	// MPI case
-            	printf( "++ %-*s%sMPI rank %3d/%-3d on",
-            			max_label_length, buf_rankData->label, label_sep,
-						buf_rankData->mpi_myrank, configInfo->mpi_numranks );
-#else
-            	// Serial case
-            	printf( "++ %-*s%srunning on",
-            			max_label_length, buf_rankData->label, label_sep );
+            	printf( "++ %-*s%s", max_label_length, buf_rankData->label, label_sep );
+#if defined( WITH_MPI )
+            	printf( "MPI rank %3d/%-3d ",
+            			buf_rankData->mpi_myrank, configInfo->mpi_numranks );
+
 #endif
             	if ( show_slurmvars )
-            		printf( " NodeID/LocID/GlobID %2d/%3d/%3d",
+            		printf( "NodeID/LocID/GlobID %2d/%3d/%3d ",
             				buf_rankData->slurm_nodeid, buf_rankData->slurm_localid, buf_rankData->slurm_procid );
             	if ( show_hostname )
-            		printf( " host %s", buf_rankData->hostname );
+            		printf( "host %s ", buf_rankData->hostname );
+#if defined( WITH_OMP )
+            	// OpenMP case or hybrid case
+            	printf( "OpenMP thread %3d/%-3d ",
+            			c2, buf_rankData->openmp_numthreads );
+#endif
             	if ( show_cpu )
-            	    printf( " cpu %3ld/%-3d", buf_rankData->threadData[c2].corenum, buf_rankData->ncpus );
+            	    printf( "cpu %3ld/%-3d ", buf_rankData->threadData[c2].corenum, buf_rankData->ncpus );
             	if ( show_numamask || show_rangemask ) {
-            		printf( " mask " );
+            		printf( "mask " );
             		if ( show_numamask ) {
             			numamask_to_ASCII( numamask, buf_rankData->threadData[c2].numamask, buf_rankData->ncpus );
             			printf( "%s ", numamask );
             		}
                     if ( show_rangemask ) {
                     	numamask_to_range( rangemask, buf_rankData->threadData[c2].numamask, buf_rankData->ncpus );
-            			printf( "%s", rangemask );
+            			printf( "(%s)", rangemask );
                     }
             	}
             	printf(  "\n" );
