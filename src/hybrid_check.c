@@ -148,10 +148,16 @@ void print_help( const char *exe_name ) {
 		"                and a dot denotes that the core is not used.\n"
 		" -r             Numeric representation of the affinity mask as a series of\n"
 		"                ranges of cores.\n"
-		" --no-hostname  Do not show the hostname in the output\n"
+		" --no-hostname  Do not show the hostname in the output.\n"
+		" --no-cpu       Do not show the CPU number in the output.\n"
 		" --slurmvars    Slow the value of SLURM_NODEID, SLURM_LOCALID and SLURM_PROCID\n"
 		"                for each rank. This can be useful to study Cray MPICH rank\n"
 		"                reordering.\n"
+		" --fp           Format showing host, cpu and numeric mask, but no Slurm\n"
+		"                variables.\n"
+		" --fr           Format showing slurm variables and numeric mask, but no hostname\n"
+		"                or cpu number, making the output fully reproducible when running\n"
+		"                on exclusive nodes.\n"
 		"\n"
 	);
 #ifdef WITH_MPI
@@ -443,7 +449,8 @@ void numamask_to_range( char * const rangemask, const short * const numamask, co
 void get_args( int argc, char **argv, int mpi_myrank,
 		       char *option_label, long *wait_time,
 			   unsigned int *show_numamask, unsigned int *show_rangemask,
-			   unsigned int *show_hostname, unsigned int *show_slurmvars ) {
+			   unsigned int *show_hostname, unsigned int *show_cpu,
+			   unsigned int *show_slurmvars ) {
 
 	char *exe_name;
 
@@ -456,6 +463,7 @@ void get_args( int argc, char **argv, int mpi_myrank,
 	*show_numamask = 0;
 	*show_rangemask = 0;
 	*show_hostname = 1;
+	*show_cpu = 1;
 	*show_slurmvars = 0;
 
 	// Remove the program name
@@ -494,8 +502,22 @@ void get_args( int argc, char **argv, int mpi_myrank,
 			}
 		} else if ( strcmp( *argv, "--no-hostname" ) == 0 ) {
 			*show_hostname = 0;
+		} else if ( strcmp( *argv, "--no-cpu" ) == 0 ) {
+			*show_cpu = 0;
 		} else if ( strcmp( *argv, "--show-slurmvars" ) == 0 ) {
 			*show_slurmvars = 1;
+		} else if ( strcmp( *argv, "--fp" ) == 0 ) {
+			*show_slurmvars = 0;
+			*show_hostname  = 1;
+			*show_cpu       = 1;
+			*show_numamask  = 0;
+			*show_rangemask = 1;
+		} else if ( strcmp( *argv, "--fr" ) == 0 ) {
+			*show_slurmvars = 1;
+			*show_hostname  = 0;
+			*show_cpu       = 0;
+			*show_numamask  = 0;
+			*show_rangemask = 1;
 		} else {
 			fprintf( stderr, "%s: Illegal flag found: %s\n", exe_name, *argv);
 			exit( EXIT_WRONG_ARGUMENT );
@@ -525,7 +547,8 @@ void get_args( int argc, char **argv, int mpi_myrank,
 
 int data_gather_print( const t_configInfo *configInfo, const char *option_label,
 		               unsigned int show_numamask, unsigned int show_rangemask,
-					   unsigned int show_hostname, unsigned int show_slurmvars ) {
+					   unsigned int show_hostname, unsigned int show_cpu,
+					   unsigned int show_slurmvars ) {
 
 	const int mssgID = 1;
 
@@ -676,7 +699,8 @@ int data_gather_print( const t_configInfo *configInfo, const char *option_label,
             				buf_rankData->slurm_nodeid, buf_rankData->slurm_localid, buf_rankData->slurm_procid );
             	if ( show_hostname )
             		printf( " host %s", buf_rankData->hostname );
-            	printf( " cpu %3ld/%-3d", buf_rankData->threadData[c2].corenum, buf_rankData->ncpus );
+            	if ( show_cpu )
+            	    printf( " cpu %3ld/%-3d", buf_rankData->threadData[c2].corenum, buf_rankData->ncpus );
             	if ( show_numamask || show_rangemask ) {
             		printf( " mask " );
             		if ( show_numamask ) {
@@ -826,6 +850,7 @@ int main( int argc, char *argv[] )
 	unsigned int show_numamask, in_show_numamask;
 	unsigned int show_rangemask, in_show_rangemask;
 	unsigned int show_hostname, in_show_hostname;
+	unsigned int show_cpu, in_show_cpu;
 	unsigned int show_slurmvars, in_show_slurmvars;
 
 	t_configInfo configInfo;
@@ -878,7 +903,7 @@ int main( int argc, char *argv[] )
     // Read the command line arguments
     //
     get_args( argc, argv, configInfo.mpi_myrank, option_label, &wait_time, &in_show_numamask, &in_show_rangemask,
-    		  &in_show_hostname, &in_show_slurmvars );
+    		  &in_show_hostname, &in_show_cpu, &in_show_slurmvars );
 
     // Compute the maximum wait time: In a heterogeneous situation, one may have given a different load
     // for each process set yet all tasks must be able to decide if we should put load or not. In fact.
@@ -888,12 +913,14 @@ int main( int argc, char *argv[] )
     MPI_Allreduce( &in_show_numamask,  &show_numamask,  1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce( &in_show_rangemask, &show_rangemask, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce( &in_show_hostname,  &show_hostname,  1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD );
+    MPI_Allreduce( &in_show_cpu,       &show_cpu,       1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce( &in_show_slurmvars, &show_slurmvars, 1, MPI_UNSIGNED, MPI_MAX, MPI_COMM_WORLD );
 #else
     max_wait_time  = wait_time;
     show_numamask  = in_show_numamask;
     show_rangemask = in_show_rangemask;
     show_hostname  = in_show_hostname;
+    show_cpu       = in_show_cpu;
     show_slurmvars = in_show_slurmvars;
 #endif
 
@@ -923,7 +950,7 @@ int main( int argc, char *argv[] )
     }
 
     // Print detailed info on the current core for processes and threads.
-    data_gather_print( &configInfo, option_label, show_numamask, show_rangemask, show_hostname, show_slurmvars );
+    data_gather_print( &configInfo, option_label, show_numamask, show_rangemask, show_hostname, show_cpu, show_slurmvars );
 
     // If simulating some load was requested, simulate some load and print the configuration again.
 
@@ -935,7 +962,7 @@ int main( int argc, char *argv[] )
     	if ( ( error == 0 ) && ( configInfo.mpi_myrank == 0 ) )
     		printf( "Approximation for the surface of the Mandelbrot fractal: %16.14lg\n\n", mandel_surface );
 
-    	data_gather_print( &configInfo, option_label, show_numamask, show_rangemask, show_hostname, show_slurmvars );
+    	data_gather_print( &configInfo, option_label, show_numamask, show_rangemask, show_hostname, show_cpu, show_slurmvars );
 
     }
 
