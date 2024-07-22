@@ -22,10 +22,10 @@ environment variable.
 
 .SH OPTIONS
 .TP
-\fB\-h\fR
+\fB\-h\fR, \fB--help\fR
 Print help information about the command
 .TP
-\fB\-l\fR \fI\,LABEL\/\fR
+\fB\-l\fR \fI\,LABEL\/\fR, \fB\--label\fR \fI\,LABEL\/\fR
 Label the output of this process with \fI\,LABEL\/\fR. This automatically
 enables displaying labels.
 .TP
@@ -47,6 +47,19 @@ that the core is not used.
 \fB\-r\fR
 Numeric representation of the affinity mask as a series of core
 or ranges of cores.
+.TP
+\fB--no-hostname\fR
+Do not show the hostname in the output.
+.TP
+\fB--no-cpu\fR
+Do not show the CPU number in the output
+.TP
+\fB--fp\fR
+"Physical output format" showing host, CPU and numeric mask.
+.TP
+\fB--fr\fR
+"Relative output format" or "reproducible output format", showing
+the numeric mask, but not the hostname or CPU number.
 
 .SH EXAMPLE
 
