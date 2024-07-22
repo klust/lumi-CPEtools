@@ -25,10 +25,10 @@ it would actually show what a regular OpenMP program would do.
 
 .SH OPTIONS
 .TP
-\fB\-h\fR
+\fB\-h\fR, \fB--help\fR
 Print help information about the command
 .TP
-\fB\-l\fR \fI\,LABEL\/\fR
+\fB\-l\fR \fI\,LABEL\/\fR, \fB\--label\fR \fI\,LABEL\/\fR
 Label the output of this process with \fI\,LABEL\/\fR. This automatically
 enables displaying labels.
 .TP
@@ -53,6 +53,27 @@ that the core is not used.
 \fB\-r\fR
 Numeric representation of the affinity mask as a series of core
 or ranges of cores.
+.TP
+\fB--no-hostname\fR
+Do not show the hostname in the output.
+.TP
+\fB--no-cpu\fR
+Do not show the CPU number in the output
+.TP
+\fB--slurmvars\fR
+Show the value of \fBSLURM_NODEID\fR, \fBSLURM_LOCALID\fR and
+\fBSLURM_PROCID\fR. 
+This option helps to analyse the effect of MPI rank reordering, but only
+makes sense if the MPI ranks are started through \fBsrun\fR.
+.TP
+\fB--fp\fR
+"Physical output format" showing host, CPU and numeric mask
+(but no Slurm variables).
+.TP
+\fB--fr\fR
+"Relative output format" or "reproducible output format", showing
+the Slurm variables from \fB--slurmvars\fR and numeric mask, 
+but not the hostname or CPU number.
 
 .PP
 In a heterogeneous job, the \fB\-w\fR, \fB\-n\fR and \fB\-r\fR options need to be specified for

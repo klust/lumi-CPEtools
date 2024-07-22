@@ -128,47 +128,48 @@ void print_help( const char *exe_name ) {
 	fprintf( stderr,
 		"\n"
 		"Flags accepted:\n"
-		" -h             produce help information and exit\n"
-		" -l <label>     specify a label to use in the output for this process\n"
-		"                This can be used to simulate using different executable names\n"
-		"                in some scenarios.\n"
-		" -w <time>      keeps all allocated CPUs busy for approximately <time> seconds\n"
-		"                computing the surface of the Mandelbrot fractal with a naive\n"
-		"                Monte Carlo algorithm so that a user can logon to the nodes\n"
-		"                and see what is happening. At the end it will print the\n"
-		"                allocation of the threads again as the OS may have improved\n"
-		"                the spreading of the threads over the cores.\n"
-	    "                If different values are given for different parts in a\n"
-		"                heterogeneous job, the largest will be used and applied to all\n"
-        "                components of the heterogeneous job.\n"
-		" -n             Show the NUMA affinity mask: Once ASCII character per virtual\n"
-		"                core, where a number or capital letter denotes that the core\n"
-		"                can be used and the number or letter denotes the NUMA group\n"
-		"                (or a * if the number of the NUMA group would be 36 or larger)\n"
-		"                and a dot denotes that the core is not used.\n"
-		" -r             Numeric representation of the affinity mask as a series of\n"
-		"                ranges of cores.\n"
-		" --no-hostname  Do not show the hostname in the output.\n"
-		" --no-cpu       Do not show the CPU number in the output.\n"
+		" -h, --help      produce help information and exit\n"
+        " -l <label>,\n"
+		" --label <label> specify a label to use in the output for this process\n"
+		"                 This can be used to simulate using different executable names\n"
+		"                 in some scenarios.\n"
+		" -w <time>       keeps all allocated CPUs busy for approximately <time> seconds\n"
+		"                 computing the surface of the Mandelbrot fractal with a naive\n"
+		"                 Monte Carlo algorithm so that a user can logon to the nodes\n"
+		"                 and see what is happening. At the end it will print the\n"
+		"                 allocation of the threads again as the OS may have improved\n"
+		"                 the spreading of the threads over the cores.\n"
+	    "                 If different values are given for different parts in a\n"
+		"                 heterogeneous job, the largest will be used and applied to all\n"
+        "                 components of the heterogeneous job.\n"
+		" -n              Show the NUMA affinity mask: Once ASCII character per virtual\n"
+		"                 core, where a number or capital letter denotes that the core\n"
+		"                 can be used and the number or letter denotes the NUMA group\n"
+		"                 (or a * if the number of the NUMA group would be 36 or larger)\n"
+		"                 and a dot denotes that the core is not used.\n"
+		" -r              Numeric representation of the affinity mask as a series of\n"
+		"                 ranges of cores.\n"
+		" --no-hostname   Do not show the hostname in the output.\n"
+		" --no-cpu        Do not show the CPU number in the output.\n"
 #if defined( WITH_MPI )
-		" --slurmvars    Slow the value of SLURM_NODEID, SLURM_LOCALID and SLURM_PROCID\n"
-		"                for each rank. This can be useful to study Cray MPICH rank\n"
-		"                reordering.\n"
+		" --slurmvars     Slow the value of SLURM_NODEID, SLURM_LOCALID and SLURM_PROCID\n"
+		"                 for each rank. This can be useful to study Cray MPICH rank\n"
+		"                 reordering.\n"
 #endif
 #if defined( WITH_MPI )
-		" --fp           Format showing host, cpu and numeric mask, but no Slurm\n"
-		"                variables.\n"
+		" --fp            Format showing host, cpu and numeric mask, but no Slurm\n"
+		"                 variables.\n"
 #else
-    	" --fp           Format showing host, cpu and numeric mask.\n"
+    	" --fp            Format showing host, cpu and numeric mask.\n"
 #endif
 #if defined( WITH_MPI )
-		" --fr           Format showing slurm variables and numeric mask, but no hostname\n"
-		"                or cpu number, making the output fully reproducible when running\n"
-		"                on exclusive nodes.\n"
+		" --fr            Format showing slurm variables and numeric mask, but no hostname\n"
+		"                 or cpu number, making the output fully reproducible when running\n"
+		"                 on exclusive nodes.\n"
 #else
-		" --fr           Format showing numeric mask, but no hostname or cpu number,\n"
-		"                making the output fully reproducible when running on exclusive\n"
-		"                nodes.\n"
+		" --fr            Format showing numeric mask, but no hostname or cpu number,\n"
+		"                 making the output fully reproducible when running on exclusive\n"
+		"                 nodes.\n"
 #endif
 		"\n"
 	);
@@ -484,16 +485,16 @@ void get_args( int argc, char **argv, int mpi_myrank,
 
 	while ( argc-- ) {
 
-		if ( strcmp( *argv, "-h") == 0 ) {
+		if ( ( strcmp( *argv, "-h") == 0 ) || ( strcmp( *argv, "--help") == 0 ) ) {
 			if ( mpi_myrank == 0 ) print_help( exe_name );
 			exit( EXIT_SUCCESS );
 		} else if ( strcmp( *argv, "-n") == 0 ) {
 			*show_numamask = 1;
 		} else if ( strcmp( *argv, "-r") == 0 ) {
 			*show_rangemask = 1;
-		} else if ( strcmp( *argv, "-l") == 0 ) {
+		} else if ( ( strcmp( *argv, "-l") == 0 ) || ( strcmp( *argv, "--label") == 0 )) {
 			if ( argc == 0 ) {  // No arguments left, so we have a problem.
-				fprintf( stderr, "%s: No label found for -l.\n", exe_name );
+				fprintf( stderr, "%s: No label found for -l/--label.\n", exe_name );
 				exit( EXIT_WRONG_ARGUMENT );
 			}
             argv++; argc--; // Skip to the next argument which should be the label.
