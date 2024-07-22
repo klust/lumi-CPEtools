@@ -123,8 +123,8 @@ void print_help( const char *exe_name ) {
 	fprintf( stderr,
 		"Flags accepted:\n"
 		"\n"
-		"  -h         Show help information and exit\n"
-		"  -l         Shows a bit more information: CCD with the thread number\n"
+		"  -h, --help Show help information and exit\n"
+		"  -l, --fl   Shows a bit more information: CCD with the thread number\n"
 		"             and GCD and optimal CCD with the PCIe bus ID\n"
 		"  -u         Unsorted printing, may work around some bugs\n"
 		"\n"
@@ -216,10 +216,10 @@ void get_args( int argc, char **argv, int mpi_myrank,
 
 	while ( argc-- ) {
 
-		if ( strcmp( *argv, "-h") == 0 ) {
+		if ( ( strcmp( *argv, "-h") == 0 ) || ( strcmp( *argv, "--help") == 0 ) ) {
 			if ( mpi_myrank == 0 ) print_help( exe_name );
 			exit( EXIT_SUCCESS );
-		} else if ( strcmp( *argv, "-l") == 0 ) {
+		} else if ( ( strcmp( *argv, "-l") == 0 ) || ( strcmp( *argv, "--fl") == 0 ) ) {
 			*show_optimap = 1;
 		} else if ( strcmp( *argv, "-u") == 0 ) {
 			*unsorted_print = 1;
