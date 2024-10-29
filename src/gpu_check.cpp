@@ -51,22 +51,22 @@ const char * const busid_map_values_short[MAXGPUS] = {
 		"d1",
 		"d6",
 		"d9",
-		"dc"
+		"de"
     };
 const char * const busid_map_values_long[MAXGPUS] = {
 	    "c1(GCD0/CCD6)",
 		"c6(GCD1/CCD7)",
 		"c9(GCD2/CCD2)",
-		"cc(GCD3/CCD3)",
+		"ce(GCD3/CCD3)",
 		"d1(GCD4/CCD0)",
 		"d6(GCD5/CCD1)",
 		"d9(GCD6/CCD4)",
-		"dc(GCD7/CCD5)"
+		"de(GCD7/CCD5)"
     };
 
 #define L3DOMAINS 8
 
-// MPI 000 - OMP 000 - HWT 001 (CCD0) - Node nid005952 - RT_GPU_ID 0,1,2,3,4,5,6,7 - GPU_ID 0,1,2,3,4,5,6,7 - Bus_ID c1(GCD0/CCD6),c6(GCD1/CCD7),c9(GCD2/CCD2),cc(GCD3/CCD3),d1(GCD4/CCD0),d6(GCD5/CCD1),d9(GCD6/CCD4),dc(GCD7/CCD5)
+// MPI 000 - OMP 000 - HWT 001 (CCD0) - Node nid005952 - RT_GPU_ID 0,1,2,3,4,5,6,7 - GPU_ID 0,1,2,3,4,5,6,7 - Bus_ID c1(GCD0/CCD6),c6(GCD1/CCD7),c9(GCD2/CCD2),ce(GCD3/CCD3),d1(GCD4/CCD0),d6(GCD5/CCD1),d9(GCD6/CCD4),de(GCD7/CCD5)
 #define OUTPUT_LINE_LENGTH 256
 
 unsigned int HWT_to_L3domain( unsigned int HWT ) {
@@ -305,7 +305,7 @@ int main(int argc, char *argv[]){
 	MPI_Get_processor_name( name, &resultlength );
 
 	// - If ROCR_VISIBLE_DEVICES is set, capture visible GPUs
-    const char* gpu_id_list; 
+    const char* gpu_id_list;
     const char* rocr_visible_devices = getenv( "ROCR_VISIBLE_DEVICES" );
     if ( rocr_visible_devices == NULL ) {
         gpu_id_list = "N/A";
