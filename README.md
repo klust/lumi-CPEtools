@@ -13,8 +13,11 @@ results.
 
 ## Some included tools
 
--   `hybrid_check`: Derived from the `acheck` and `xthi` commands used by HPE Cray in their
+-   `serial-check`, `omp_check`, `mpi_check` and `hybrid_check`: Derived 
+    from the `acheck` and `xthi` commands used by HPE Cray in their
     tutorials.
 
--   `gpu_Check`: Derived from the ORNL `hello_jobstep` program.
+-   `gpu_check`: Derived from the ORNL `hello_jobstep` program.
+
+-   `hpcat`: A [tool developed by HPE](https://github.com/HewlettPackard/hpcat)
 
