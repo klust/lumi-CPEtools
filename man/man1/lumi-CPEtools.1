@@ -42,8 +42,14 @@ A hybrid MPI/OpenMP program that prints information about thread and GPU binding
 on Cray EX Bardpeak nodes as in LUMI-G, based on the ORNL hello_jobstep program.
 \fB(AMD GPU nodes only)\fR
 
+.TP
+\fBhpcat\fR
+A HPC Affinity Tracker tool developed by HPE to display thread and task binding
+to CPU hardware threads, accelerators and NICs.
+
 .SH SEE ALSO
-xldd(1), serial_check(1), omp_check(1), mpi_check(1), hybrid_check(1)
+xldd(1), serial_check(1), omp_check(1), mpi_check(1), hybrid_check(1), hpcat(1)
 
 .SH AUTHOR
-Kurt Lust (Kurt.Lust@uantwerpen.be) and Peter Larsson (ypetla@kth.se) for the LUMI consortium
+Tools by Kurt Lust (Kurt.Lust@uantwerpen.be), Peter Larsson (ypetla@kth.se) and
+Jean-Yves Vet (HPE), manual pages by Kurt Lust.

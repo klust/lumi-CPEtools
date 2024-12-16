@@ -1,0 +1,62 @@
+.\" Written by Kurt Lust, kurt.lust@uantwerpen.be for the LUMI consortium.
+.TH man 1 "3 July 2023" "1.1" "hpcat (lumi-CPEtools) command"
+
+.SH NAME
+hpcat \- HPC Affinity Tracker, a simple application to display NUMA and CPU 
+activities for HPC applications.
+
+.SH DESCRIPTION
+\fBhpcat\fR is designed to display NUMA and CPU affinities within the context 
+of HPC applications. It provides reports on MPI tasks, OpenMP (automatically 
+enabled if OMP_NUM_THREADS is set), accelerators (automatically enabled if GPUs 
+are allocated via Slurm), and NICs (Cray MPICH only, starting from 2 nodes). 
+The output format is a human-readable, condensed table, but YAML is also available 
+as an option.
+
+Compared to several other tools in the \fBlumi-CPEtools\fR module, \fBhpcat\fR 
+can also display network card affinity which is useful on the LUMI-G nodes.
+This is also related to the \fBMPICH_OFI_NIC_POLICY\fR environment variable
+which can be used to influence the NIC binding behaviour.
+
+.SH OPTIONS
+.TP
+\fB\-?\fR, \fB--help\fR
+Print help information about the command.
+.TP
+\fB\-V\fR, \fB--version\fR
+Print the version of \fBhpcat\fR.
+.TP
+\fB--usage\fR
+Print a short usage message
+.TP
+\fB--enable-omp\fR
+Explicitly enable the display of OpenMP thread affinity.
+By default it is auto-enabled if \fBOMP_NUM_THREADS\fR is set.
+.TP
+\fB--disable-omp\fR
+Explicitly disable the display of OpenMP thread affinity.
+.TP
+\fB--enable-accel\fR
+Explicitly enable the display of GPU affinities. 
+By default, displaying GPU affinities is enabled for jobs/job steps that
+got GPUs allocated via Slurm.
+.TP
+\fB--disable-accel\fR
+Explicitly disable the display of GPU affinities.
+.TP
+\fB--disable-nic\fR
+Disable the display of NIC affinity. Displaying NIC affinity is automatically
+turned on if a job uses more than one node. As within a node, the NIC is not used
+by Cray MPICH, NIC affinity also cannot be displayed.
+.TP
+\fB--no-banner\fR
+Do not display header and footer banners.
+.TP
+\fB-y\fR, \fB--yaml\fR
+Enable YAML output.
+
+.SH SEE ALSO
+serial_check(1), omp_check(1), mpi_check(1), hybrid_check(1), gpu_check(1), lumi-CPEtools(1)
+
+.SH AUTHOR
+Jean-Yves Vet (HPE), manual page by Kurt Lust for the LUMI consortium.
