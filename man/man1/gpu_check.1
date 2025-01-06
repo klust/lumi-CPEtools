@@ -1,5 +1,5 @@
 .\" Written by Kurt Lust, kurt.lust@uantwerpen.be for the LUMI consortium.
-.TH man 1 "3 July 2023" "1.1" "gpu_check (lumi-CPEtools) command"
+.TH man 1 "6 January 2025" "1.2" "gpu_check (lumi-CPEtools) command"
 
 .SH NAME
 gpu_check \- Simple "Hello, World!"-style hybrid MPI/OpenMP program to check 
@@ -27,10 +27,10 @@ that can be found at https://code.ornl.gov/olcf/hello_jobstep.
 
 .SH OPTIONS
 .TP
-\fB\-h\fR
+\fB\-h\fR, \fB--help\fR
 Print help information about the command.
 .TP
-\fB\-l\fR 
+\fB\-l\fR. \fB--fl\fR
 Shows a bit more information: CCD with the thread number
 and GCD and optimal CCD with the PCIe bus ID.
 .TP
@@ -61,7 +61,7 @@ srun -N ${SLURM_NNODES} -n ${SLURM_NTASKS} ${cpu_bind} ${gpu_bind} gpu_check -l
 .EE
 
 .SH SEE ALSO
-serial_check(1), omp_check(1), mpi_check(1), hybrid_check(1), lumi-CPEtools(1)
+serial_check(1), omp_check(1), mpi_check(1), hybrid_check(1), hpcat(1), lumi-CPEtools(1)
 
 .SH AUTHOR
 Kurt Lust (Kurt.Lust@uantwerpen.be) for the LUMI consortium, based on 
