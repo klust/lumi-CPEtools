@@ -44,6 +44,8 @@ processes each using 15 cores and 2 GPUs, with proper binding.
 It assumes the correct modules are loaded already.
 
 .EX
+#! /bin/bash
+#SBATCH --partition=standard-g
 #SBATCH --partition=standard-g
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
